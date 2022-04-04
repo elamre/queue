@@ -1,13 +1,48 @@
 package queue
 
 import (
+	"strings"
 	"sync"
 	"testing"
 	"time"
 )
 
+func TestStructPointer(t *testing.T) {
+	type StringStruct struct {
+		Contents string
+	}
+	q := New[*StringStruct]()
+	if q.Length() != 0 {
+		t.Error("empty queue length not 0")
+	}
+	if q.Front() != nil {
+		t.Error("There should be nil")
+	}
+	firstTestString := "first"
+	secondTestString := "second"
+	thirdTestString := "third"
+	insertionOne := &StringStruct{Contents: secondTestString}
+	insertionTwo := &StringStruct{Contents: thirdTestString}
+	insertionThree := &StringStruct{Contents: firstTestString}
+	q.Append(insertionOne)
+	q.Append(insertionTwo)
+	q.Append(insertionThree)
+	insertionOne.Contents = firstTestString
+	insertionTwo.Contents = secondTestString
+	insertionThree.Contents = thirdTestString
+	if compare := strings.Compare(q.Pop().Contents, firstTestString); compare != 0 {
+		t.Error("content ", compare, " is not expected: ", firstTestString)
+	}
+	if compare := strings.Compare(q.Pop().Contents, secondTestString); compare != 0 {
+		t.Error("content ", compare, " is not expected: ", secondTestString)
+	}
+	if compare := strings.Compare(q.Pop().Contents, thirdTestString); compare != 0 {
+		t.Error("content ", compare, " is not expected: ", thirdTestString)
+	}
+}
+
 func TestQueueSimple(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	for i := 0; i < minQueueLen; i++ {
 		q.Append(i)
@@ -21,7 +56,7 @@ func TestQueueSimple(t *testing.T) {
 }
 
 func TestQueueSimplePrepend(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	for i := 0; i < minQueueLen; i++ {
 		q.Prepend(i)
@@ -35,7 +70,7 @@ func TestQueueSimplePrepend(t *testing.T) {
 }
 
 func TestQueueManual(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	q.Append(1)
 	q.Append(2)
@@ -61,7 +96,7 @@ func TestQueueManual(t *testing.T) {
 }
 
 func TestQueueWrapping(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	for i := 0; i < minQueueLen; i++ {
 		q.Append(i)
@@ -77,7 +112,7 @@ func TestQueueWrapping(t *testing.T) {
 }
 
 func TestQueueWrappingPrepend(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	for i := 0; i < minQueueLen; i++ {
 		q.Prepend(i)
@@ -93,7 +128,7 @@ func TestQueueWrappingPrepend(t *testing.T) {
 }
 
 func TestQueueThreadSafety(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	var wg sync.WaitGroup
 
@@ -121,7 +156,7 @@ func TestQueueThreadSafety(t *testing.T) {
 }
 
 func TestQueueThreadSafety2(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	var wg sync.WaitGroup
 
@@ -146,7 +181,7 @@ func TestQueueThreadSafety2(t *testing.T) {
 }
 
 func TestQueueThreadSafety3(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	var wg sync.WaitGroup
 
@@ -170,7 +205,7 @@ func TestQueueThreadSafety3(t *testing.T) {
 }
 
 func TestQueueLength(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	if q.Length() != 0 {
 		t.Error("empty queue length not 0")
@@ -191,7 +226,7 @@ func TestQueueLength(t *testing.T) {
 }
 
 func TestQueueBlocking(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	var wg sync.WaitGroup
 
@@ -226,7 +261,7 @@ func assertPanics(t *testing.T, name string, f func()) {
 }
 
 func TestFront(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	q.Append(1)
 	q.Append(2)
@@ -243,9 +278,9 @@ func TestFront(t *testing.T) {
 }
 
 func TestFrontEmpty(t *testing.T) {
-	q := New()
+	q := New[int]()
 
-	if q.Front() != nil {
+	if q.Front() != 0 {
 		t.Error("There should be nil")
 	}
 
@@ -256,15 +291,15 @@ func TestFrontEmpty(t *testing.T) {
 	q.Pop()
 	q.Pop()
 
-	if q.Front() != nil {
+	if q.Front() != 0 {
 		t.Error("There should be nil")
 	}
 }
 
 func TestBackEmpty(t *testing.T) {
-	q := New()
+	q := New[int]()
 
-	if q.Back() != nil {
+	if q.Back() != 0 {
 		t.Error("There should be nil")
 	}
 
@@ -275,13 +310,13 @@ func TestBackEmpty(t *testing.T) {
 	q.Pop()
 	q.Pop()
 
-	if q.Back() != nil {
+	if q.Back() != 0 {
 		t.Error("There should be nil")
 	}
 }
 
 func TestBack(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	q.Append(1)
 	q.Append(2)
@@ -298,7 +333,7 @@ func TestBack(t *testing.T) {
 }
 
 func TestRemove(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	q.Append(1)
 	q.Append(2)
@@ -321,7 +356,7 @@ func TestRemove(t *testing.T) {
 }
 
 func TestTestQueueClean(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	q.Append(4)
 	q.Append(6)
@@ -348,7 +383,7 @@ func TestTestQueueClean(t *testing.T) {
 }
 
 func TestTestQueueClean2(t *testing.T) {
-	q := New()
+	q := New[int]()
 
 	for i := 0; i < 50; i++ {
 		q.Append(i)
@@ -367,7 +402,7 @@ func TestTestQueueClean2(t *testing.T) {
 // enough, but if you have less than that available and start swapping, then all bets are off.
 
 func BenchmarkQueueSerial(b *testing.B) {
-	q := New()
+	q := New[int]()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		q.Append(i)
@@ -378,7 +413,7 @@ func BenchmarkQueueSerial(b *testing.B) {
 }
 
 func BenchmarkQueueTickTock(b *testing.B) {
-	q := New()
+	q := New[int]()
 	for i := 0; i < b.N; i++ {
 		q.Append(i)
 		q.Pop()
