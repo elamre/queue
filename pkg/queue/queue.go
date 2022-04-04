@@ -10,9 +10,9 @@ type ElementConstraint interface {
 
 const minQueueLen = 32
 
-type Queue[T any] struct {
+type Queue[T comparable] struct {
 	items             map[int64]T
-	ids               map[interface{}]int64
+	ids               map[T]int64
 	buf               []int64
 	head, tail, count int
 	mutex             *sync.Mutex
@@ -21,10 +21,10 @@ type Queue[T any] struct {
 	NotEmpty chan struct{}
 }
 
-func New[T any]() *Queue[T] {
+func New[T comparable]() *Queue[T] {
 	q := &Queue[T]{
 		items:    make(map[int64]T),
-		ids:      make(map[interface{}]int64),
+		ids:      make(map[T]int64),
 		buf:      make([]int64, minQueueLen),
 		mutex:    &sync.Mutex{},
 		NotEmpty: make(chan struct{}, 1),
@@ -41,7 +41,7 @@ func (q *Queue[T]) Clean() {
 	defer q.mutex.Unlock()
 
 	q.items = make(map[int64]T)
-	q.ids = make(map[interface{}]int64)
+	q.ids = make(map[T]int64)
 	q.buf = make([]int64, minQueueLen)
 	q.tail = 0
 	q.head = 0
@@ -217,7 +217,7 @@ func (q *Queue[T]) Pop() T {
 }
 
 // Removes one element from the queue
-func (q *Queue[T]) Remove(elem interface{}) bool {
+func (q *Queue[T]) Remove(elem T) bool {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
