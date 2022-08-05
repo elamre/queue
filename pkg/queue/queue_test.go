@@ -1,11 +1,86 @@
 package queue
 
 import (
+	"math/rand"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 )
+
+func TestSwapInteger(t *testing.T) {
+	expected := []int{4, 3, 2, 1}
+	q := New[int]()
+	q.Append(1)
+	q.Append(2)
+	q.Append(3)
+	q.Append(4)
+	q.swapElem(0, 3)
+	q.swapElem(1, 2)
+	for i := range expected {
+		nr := q.Pop()
+		if nr != expected[i] {
+			t.Errorf("flip did not happen %d != %d", nr, expected)
+		}
+	}
+}
+
+func TestSwapPointerStruct(t *testing.T) {
+	type TestStruct struct {
+		testInt int
+	}
+	q := New[*TestStruct]()
+	expected := []int{4, 3, 2, 1}
+	q.Append(&TestStruct{testInt: 1})
+	q.Append(&TestStruct{testInt: 2})
+	q.Append(&TestStruct{testInt: 3})
+	q.Append(&TestStruct{testInt: 4})
+	q.swapElem(0, 3)
+	q.swapElem(1, 2)
+	for i := range expected {
+		nr := q.Pop()
+		if nr.testInt != expected[i] {
+			t.Errorf("flip did not happen %d != %d", nr, expected)
+		}
+	}
+}
+
+func TestOrderingInteger(t *testing.T) {
+	q := New[int]()
+	for i := 0; i < 10000; i++ {
+		q.Append(rand.Int())
+	}
+	q.QuickSort(func(a int, b int) int { return a - b })
+	prevItem := q.Pop()
+	for q.Length() > 0 {
+		curItem := q.Pop()
+		if curItem < prevItem {
+			t.Errorf("sort is wrong %d !< %d", prevItem, curItem)
+		}
+		prevItem = curItem
+	}
+}
+
+func TestOrderingPointerStruct(t *testing.T) {
+	type TestStruct struct {
+		testInt int
+	}
+	q := New[*TestStruct]()
+	for i := 0; i < 10000; i++ {
+		q.Append(&TestStruct{testInt: rand.Int()})
+	}
+	q.QuickSort(func(a *TestStruct, b *TestStruct) int {
+		return a.testInt - b.testInt
+	})
+	prevItem := q.Pop()
+	for q.Length() > 0 {
+		curItem := q.Pop()
+		if curItem.testInt < prevItem.testInt {
+			t.Errorf("sort is wrong %d !< %d", prevItem, curItem)
+		}
+		prevItem = curItem
+	}
+}
 
 func TestStructPointer(t *testing.T) {
 	type StringStruct struct {

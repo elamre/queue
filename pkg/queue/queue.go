@@ -5,9 +5,6 @@ import (
 	"sync"
 )
 
-type ElementConstraint interface {
-}
-
 const minQueueLen = 32
 
 type Queue[T comparable] struct {
@@ -228,4 +225,38 @@ func (q *Queue[T]) Remove(elem T) bool {
 	delete(q.ids, elem)
 	delete(q.items, id)
 	return true
+}
+
+func (q *Queue[T]) swapElem(idx1, idx2 int64) {
+	t := q.buf[idx1]
+	q.buf[idx1] = q.buf[idx2]
+	q.buf[idx2] = t
+}
+
+func (q *Queue[T]) partition(s func(elem1 T, elem2 T) int, low, high int64) int64 {
+	pivot := q.items[q.buf[high]]
+	i := low - 1
+	for j := low; j < high; j++ {
+		id := q.buf[j]
+		elem := q.items[id]
+		if s(elem, pivot) <= 0 {
+			i++
+			q.swapElem(i, j)
+		}
+	}
+	q.swapElem(i+1, high)
+	return i + 1
+}
+
+// Sorts the queue
+func (q *Queue[T]) quickSort(s func(elem1 T, elem2 T) int, low, high int64) {
+	if low < high {
+		pi := q.partition(s, low, high)
+		q.quickSort(s, low, pi-1)
+		q.quickSort(s, pi+1, high)
+	}
+}
+
+func (q *Queue[T]) QuickSort(s func(elem1 T, elem2 T) int) {
+	q.quickSort(s, 0, int64(q.Length())-1)
 }
