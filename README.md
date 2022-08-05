@@ -1,3 +1,12 @@
+This is a fork from: [github.com/sheerun/queue](https://github.com/sheerun/queue)
+
+## Differences from fork
+Some new features have been added (and tests are included):
+ - Added go mod support
+ - Updated to use Generics (go 1.18 is therefor a requirement)
+ - Adding a quicksort
+
+
 # Queue
 
 [![GoDoc](https://godoc.org/github.com/sheerun/queue?status.svg)](https://godoc.org/github.com/sheerun/queue)
@@ -16,11 +25,11 @@ import (
   "sync"
   "time"
 
-  "github.com/sheerun/queue"
+  "github.com/elamre/queue/pkg/queue"
 )
 
 func main() {
-  q := queue.New()
+  q := queue.New[int]()
   var wg sync.WaitGroup
   wg.Add(2)
 
